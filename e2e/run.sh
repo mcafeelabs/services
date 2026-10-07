@@ -62,6 +62,7 @@ diagnose() {
     }
   done
   kubectl get externalsecrets,pushsecrets -A 2>/dev/null || true
+  kubectl -n git logs deploy/git --tail=30 2>/dev/null || true
   kubectl -n services get stages,warehouses,freight,promotions 2>/dev/null || true
 }
 

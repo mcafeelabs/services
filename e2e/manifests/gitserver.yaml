@@ -31,7 +31,7 @@ spec:
       containers:
         - name: git
           image: 10.96.200.200:5000/gitserver:e2e
-          args: [--root=/srv/git, --addr=:8080, --init=services,platform-chart]
+          args: [--root=/srv/git, --addr=:8080, "--init=services,platform-chart"]
           envFrom: [{secretRef: {name: gitserver}}]
           ports: [{containerPort: 8080}]
           readinessProbe:

@@ -3,6 +3,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   annotations:
+    platform.mcafeelabs.io/expires: "2026-10-10T03:39:15Z"
     platform.mcafeelabs.io/ttl: 72h
   labels:
     istio.io/dataplane-mode: ambient

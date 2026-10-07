@@ -21,6 +21,7 @@ argocd:
 kargo:
   project: services
   imageConstraint: ">=0.1.0"
+  interval: 2m0s
 # Vendored from platform-chart (chart/capabilities.yaml); CI checks it matches
 # chart.revision.
 capabilities: platform/capabilities.yaml
