@@ -1,5 +1,7 @@
-# What the central chart supports. Source of truth: platform-chart
-# chart/capabilities.yaml at the revision registry.yaml pins.
+# What this chart supports: the chartProfiles a service may select and the
+# resource kinds it may provide. The services repo vendors this file
+# (platform/capabilities.yaml) and svcreg rejects manifests that use anything
+# else. Keep it in step with templates/.
 apiVersion: platform/v1
 chartVersion: 0.1.0
 profiles:
