@@ -1,0 +1,16 @@
+# The platform team owns the shared layers, environments and generated output.
+/_global/             @mcafeelabs/platform
+/environments/        @mcafeelabs/platform
+/platform/            @mcafeelabs/platform
+/registry.yaml        @mcafeelabs/platform
+/rendered/            @mcafeelabs/platform
+/apps/                @mcafeelabs/platform
+
+# Each team owns its service directory.
+/services/orders/     @mcafeelabs/team-commerce
+/services/payments/   @mcafeelabs/team-payments
+/services/inventory/  @mcafeelabs/team-fulfillment
+/services/identity/   @mcafeelabs/team-identity
+
+# Sandboxes are self-service; anyone may add one.
+/sandboxes/

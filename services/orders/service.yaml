@@ -1,0 +1,25 @@
+# Published by CI from github.com/mcafeelabs/orders. Do not edit here.
+apiVersion: platform/v1
+name: orders
+owner: team-commerce
+chartProfile: http-api
+provides:
+  - name: api
+    kind: http-endpoint
+  - name: events-queue
+    kind: sqs-queue
+    sandbox: isolate
+  - name: db
+    kind: postgres
+    sandbox: isolate
+  - name: orders.created
+    kind: nats-subject
+consumes:
+  - service: payments
+    output: api
+  - service: inventory
+    output: stock.changed
+deployAfter:
+  - service: identity
+config:
+  schema: ./config-values.schema.yaml

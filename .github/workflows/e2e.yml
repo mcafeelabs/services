@@ -1,0 +1,62 @@
+name: e2e
+# Stands the registry up on Kind with Argo CD, Istio ambient, ESO, NATS and
+# Kargo, and checks stand-up order, config resolution, sandbox routing over
+# HTTP and NATS, promotion, and teardown. See e2e/run.sh.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      platform_ref: {description: "platform ref", default: main}
+      chart_ref: {description: "platform-chart ref", default: main}
+permissions:
+  contents: read
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  kind:
+    # Generated-output commits from CI would only re-run the same test.
+    if: github.event_name != 'push' || github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DEPS: ${{ github.workspace }}/.e2e-deps
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with: {repository: mcafeelabs/platform, ref: "${{ inputs.platform_ref || 'main' }}", path: .e2e-deps/platform}
+      - uses: actions/checkout@v5
+        with: {repository: mcafeelabs/platform-chart, ref: "${{ inputs.chart_ref || 'main' }}", path: .e2e-deps/platform-chart}
+      - uses: actions/checkout@v5
+        with: {repository: mcafeelabs/orders, path: .e2e-deps/orders}
+      - uses: actions/checkout@v5
+        with: {repository: mcafeelabs/payments, path: .e2e-deps/payments}
+      - uses: actions/checkout@v5
+        with: {repository: mcafeelabs/inventory, path: .e2e-deps/inventory}
+      - uses: actions/checkout@v5
+        with: {repository: mcafeelabs/identity, path: .e2e-deps/identity}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: .e2e-deps/platform/go.mod
+          cache-dependency-path: .e2e-deps/platform/go.sum
+      - name: Install kind, helm
+        run: |
+          go install sigs.k8s.io/kind@v0.33.0
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          kind version; helm version --short; kubectl version --client; yq --version; jq --version
+      - name: Run e2e
+        run: e2e/run.sh
+      - name: Diagnostics
+        if: failure()
+        run: |
+          kubectl get pods -A -o wide || true
+          kubectl get applications,applicationsets -A || true
+          kubectl -n argocd logs deploy/argocd-applicationset-controller --tail=100 || true
+          kubectl -n argocd logs sts/argocd-application-controller --tail=200 || true
+          kubectl -n kargo logs deploy/kargo-controller --tail=200 || true
+          kubectl -n external-secrets logs deploy/external-secrets --tail=100 || true
+          kubectl get externalsecrets,pushsecrets -A -o wide || true
+          kubectl -n services get warehouses,stages,freight,promotions -o wide || true
+          kubectl get events -A --sort-by=.lastTimestamp | tail -80 || true

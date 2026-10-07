@@ -1,0 +1,23 @@
+# Published by CI from github.com/mcafeelabs/inventory. Do not edit here.
+$schema: https://json-schema.org/draft/2020-12/schema
+type: object
+required: [http, nats, events]
+properties:
+  log:
+    type: object
+    properties:
+      level: {enum: [debug, info, warn, error]}
+  http:
+    type: object
+    properties:
+      port: {type: integer}
+  nats:
+    type: object
+    required: [url]
+    properties:
+      url: {type: string, pattern: "^nats://"}
+  events:
+    type: object
+    required: [stockChanged]
+    properties:
+      stockChanged: {type: string}

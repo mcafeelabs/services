@@ -1,0 +1,32 @@
+name: sandbox-expire
+# Remove sandboxes past their TTL. Argo CD then prunes their apps, Crossplane
+# deletes isolated resources, and the routes go with the regenerated apps/.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  PLATFORM_REF: main
+jobs:
+  expire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.26"
+          cache: false
+      - run: go install github.com/mcafeelabs/platform/cmd/svcreg@${PLATFORM_REF}
+      - run: |
+          svcreg sandbox-expire
+          svcreg generate
+          git add -A sandboxes rendered apps
+          if git diff --cached --quiet; then echo "nothing expired"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "remove expired sandboxes"
+          git push origin HEAD:main

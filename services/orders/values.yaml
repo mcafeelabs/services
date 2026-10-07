@@ -1,0 +1,21 @@
+# Layer 3: service. Owner: team-commerce.
+image:
+  tag: "0.1.0"
+config:
+  http:
+    port: 8080
+  database:
+    host: {$output: orders/db#host}
+    port: {$output: orders/db#port}
+    name: {$output: orders/db#database}
+    user: {$output: orders/db#username}
+    password: {$output: orders/db#password}
+  payments:
+    url: {$output: payments/api}
+    apiKey: {$secret: aws-sm://orders/payments-api-key}
+  featureFlags:
+    checkoutV2: {$kv: ssm://orders/flags/checkout-v2}
+  events:
+    ordersCreated: {$output: orders/orders.created}
+    stockChanged: {$output: inventory/stock.changed}
+    queue: {$output: orders/events-queue}

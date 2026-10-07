@@ -1,0 +1,12 @@
+# Published by CI from github.com/mcafeelabs/inventory. Do not edit here.
+apiVersion: platform/v1
+name: inventory
+owner: team-fulfillment
+chartProfile: http-api
+provides:
+  - name: api
+    kind: http-endpoint
+  - name: stock.changed
+    kind: nats-subject
+config:
+  schema: ./config-values.schema.yaml

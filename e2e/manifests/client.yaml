@@ -1,0 +1,18 @@
+# A client inside the mesh for the routing checks.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: e2e-client
+  labels:
+    istio.io/dataplane-mode: ambient
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: e2e-client
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:8.16.0
+      command: [sleep, infinity]

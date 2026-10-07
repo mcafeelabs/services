@@ -1,0 +1,13 @@
+# Published by CI from github.com/mcafeelabs/payments. Do not edit here.
+apiVersion: platform/v1
+name: payments
+owner: team-payments
+chartProfile: http-api
+provides:
+  - name: api
+    kind: http-endpoint
+consumes:
+  - service: identity
+    output: api
+config:
+  schema: ./config-values.schema.yaml

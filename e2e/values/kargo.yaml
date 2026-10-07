@@ -1,0 +1,8 @@
+api:
+  adminAccount:
+    # bcrypt of "e2e-admin-password"; e2e only.
+    passwordHash: "$2a$10$GL6dB4klszZISsxyNJN1.eNkWySpCBoGdRrjGHKOlpGPu66pTD8kS"
+    tokenSigningKey: e2e-token-signing-key-not-secret
+controller:
+  argocd:
+    namespace: argocd

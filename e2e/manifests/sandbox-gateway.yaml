@@ -1,0 +1,24 @@
+# The sandbox ingress: an Istio Gateway that accepts the per-sandbox
+# HTTPRoutes svcreg generates (<name>.sbx.<domain>, baggage set on the way in).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-ingress
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: sandbox
+  namespace: istio-ingress
+  annotations:
+    # Kind has no load balancer.
+    networking.istio.io/service-type: ClusterIP
+spec:
+  gatewayClassName: istio
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      hostname: "*.sbx.dev.localdev.test"
+      allowedRoutes:
+        namespaces: {from: All}

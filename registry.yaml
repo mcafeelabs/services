@@ -1,0 +1,26 @@
+# The services registry. svcreg reads this file, the layers below, every
+# services/<svc>/ directory and sandboxes/*.yaml, and generates rendered/ and
+# apps/ for Argo CD and Kargo.
+apiVersion: platform/v1
+kind: Registry
+git:
+  repoURL: https://github.com/mcafeelabs/services
+  revision: main
+chart:
+  repoURL: https://github.com/mcafeelabs/platform-chart
+  path: chart
+  # Pin to a tag or commit once platform-chart is tagged.
+  revision: main
+images:
+  registry: ghcr.io/mcafeelabs
+tools:
+  image: ghcr.io/mcafeelabs/svcreg:latest
+argocd:
+  namespace: argocd
+  project: default
+kargo:
+  project: services
+  imageConstraint: ">=0.1.0"
+# Vendored from platform-chart (chart/capabilities.yaml); CI checks it matches
+# chart.revision.
+capabilities: platform/capabilities.yaml

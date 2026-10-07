@@ -1,0 +1,80 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+env:
+  # svcreg version (the platform repo's ref).
+  PLATFORM_REF: main
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # sandbox TTLs come from git history
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.26"
+          cache: false
+      - name: Install svcreg
+        run: go install github.com/mcafeelabs/platform/cmd/svcreg@${PLATFORM_REF}
+      - name: Vendored capabilities match the pinned chart
+        run: |
+          repo=$(yq '.chart.repoURL' registry.yaml)
+          rev=$(yq '.chart.revision' registry.yaml)
+          git clone -q --depth 1 --branch "$rev" "$repo" /tmp/chart 2>/dev/null || { git clone -q "$repo" /tmp/chart && git -C /tmp/chart checkout -q "$rev"; }
+          diff -u /tmp/chart/chart/capabilities.yaml platform/capabilities.yaml \
+            || { echo "::error file=platform/capabilities.yaml::differs from $repo@$rev chart/capabilities.yaml"; exit 1; }
+      - name: Validate (graph, references, schemas in every environment and sandbox)
+        run: svcreg validate
+      - name: Graph
+        run: |
+          { echo '### Deployment graph'; echo '```'; svcreg graph; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Generated output
+        run: |
+          # Generated files are committed by CI after merge; on a PR, show
+          # what would change.
+          if svcreg generate --check > /tmp/check.txt 2>&1; then
+            echo "generated output is up to date" >> "$GITHUB_STEP_SUMMARY"
+          else
+            { echo '### Generated output after merge'; echo '```'; tail -n +2 /tmp/check.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: kubeconform generated manifests
+        run: |
+          go install github.com/yannh/kubeconform/cmd/kubeconform@v0.8.0
+          svcreg generate --out /tmp/gen
+          find /tmp/gen/apps -name '*.yaml' -print0 | xargs -0 kubeconform -strict -summary -ignore-missing-schemas \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+
+  regenerate:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.26"
+          cache: false
+      - run: go install github.com/mcafeelabs/platform/cmd/svcreg@${PLATFORM_REF}
+      - name: Commit rendered/ and apps/
+        run: |
+          svcreg generate
+          git add rendered apps
+          if git diff --cached --quiet; then echo "up to date"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "regenerate rendered/ and apps/" -m "From ${GITHUB_SHA}."
+          git push origin HEAD:main

@@ -1,0 +1,25 @@
+# Apply once per Argo CD instance. It syncs apps/_platform, whose
+# ApplicationSets create one root app per environment (apps/<env>), the
+# sandbox apps, and the Kargo resources.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: registry
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mcafeelabs/services
+    targetRevision: main
+    path: apps/_platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: [ServerSideApply=true]
+    retry:
+      limit: 10
+      backoff: {duration: 10s, factor: 2, maxDuration: 3m}

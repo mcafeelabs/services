@@ -1,0 +1,28 @@
+# Published by CI from github.com/mcafeelabs/payments. Do not edit here.
+$schema: https://json-schema.org/draft/2020-12/schema
+type: object
+required: [http, identity, featureFlags]
+properties:
+  log:
+    type: object
+    properties:
+      level: {enum: [debug, info, warn, error]}
+  http:
+    type: object
+    properties:
+      port: {type: integer}
+  nats:
+    type: object
+    properties:
+      url: {type: string}
+  identity:
+    type: object
+    required: [url]
+    properties:
+      url: {type: string, pattern: "^https?://"}
+  currency: {type: string, enum: [USD, EUR]}
+  featureFlags:
+    type: object
+    additionalProperties: false
+    properties:
+      refundsV2: {type: boolean}

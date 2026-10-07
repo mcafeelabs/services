@@ -1,0 +1,8 @@
+# Layer 3: service. Owner: team-fulfillment.
+image:
+  tag: "0.1.0"
+config:
+  http:
+    port: 8080
+  events:
+    stockChanged: {$output: inventory/stock.changed}

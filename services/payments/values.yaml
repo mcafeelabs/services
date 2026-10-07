@@ -1,0 +1,11 @@
+# Layer 3: service. Owner: team-payments.
+image:
+  tag: "0.1.0"
+config:
+  http:
+    port: 8080
+  identity:
+    url: {$output: identity/api}
+  currency: USD
+  featureFlags:
+    refundsV2: false

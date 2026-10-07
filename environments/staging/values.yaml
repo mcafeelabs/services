@@ -1,0 +1,18 @@
+# Layer 2: environment. Owner: platform team.
+# staging is promoted by Kargo: each service's Stage copies rendered/staging
+# into a stage branch and sets the image tag from the Freight.
+platform:
+  namespace: staging
+  domain: staging.localdev.test
+  delivery: kargo
+  provisioner: local
+  rollouts:
+    enabled: false
+  nats:
+    url: nats://nats.nats-staging.svc.cluster.local:4222
+  secretStores:
+    aws-sm: {name: localdev-secrets, keyStyle: dotted}
+    ssm: {name: localdev-params, keyStyle: dotted}
+config:
+  nats:
+    url: nats://nats.nats-staging.svc.cluster.local:4222

@@ -1,0 +1,6 @@
+# Layer 4: service x environment. Owner: team-commerce.
+deployment:
+  replicas: 2
+config:
+  log:
+    level: warn

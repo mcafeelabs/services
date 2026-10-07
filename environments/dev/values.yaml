@@ -1,0 +1,32 @@
+# Layer 2: environment. Owner: platform team.
+# dev is the long-lived baseline sandboxes route back to. It is delivered
+# directly from rendered/dev on main, so it stands up from the repo alone.
+platform:
+  namespace: dev
+  domain: dev.localdev.test
+  delivery: direct
+  provisioner: local
+  rollouts:
+    enabled: false
+  nats:
+    url: nats://nats.nats-dev.svc.cluster.local:4222
+  # Provider names in $secret/$kv references map to this environment's
+  # ClusterSecretStores. In an AWS account these point at Secrets Manager and
+  # Parameter Store (keyStyle: path); localdev uses the Kubernetes provider,
+  # which takes Secret names, hence keyStyle: dotted.
+  secretStores:
+    aws-sm: {name: localdev-secrets, keyStyle: dotted}
+    ssm: {name: localdev-params, keyStyle: dotted}
+  sandbox:
+    enabled: true
+    domain: sbx.dev.localdev.test
+    gateway: {name: sandbox, namespace: istio-ingress}
+    entryService: orders
+    quota:
+      requests.cpu: "1"
+      requests.memory: 1Gi
+      limits.memory: 2Gi
+      pods: "10"
+config:
+  nats:
+    url: nats://nats.nats-dev.svc.cluster.local:4222

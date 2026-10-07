@@ -1,0 +1,17 @@
+# Layer 1: global defaults. Owner: platform team.
+platform:
+  outputs:
+    # Dynamic outputs (endpoints, generated credentials) are pushed to this
+    # provider's store at /services/<env>/<svc>/<output>.
+    provider: ssm
+  waypoint:
+    enabled: true
+deployment:
+  replicas: 1
+  port: 8080
+  resources:
+    requests: {cpu: 10m, memory: 32Mi}
+    limits: {memory: 128Mi}
+config:
+  log:
+    level: info

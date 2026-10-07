@@ -1,0 +1,53 @@
+# An in-cluster git server holding the e2e copy of the services repo and the
+# chart. Argo CD reads it; Kargo pushes stage branches to it.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: git
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitserver
+  namespace: git
+stringData:
+  GIT_USER: e2e
+  GIT_PASSWORD: e2e-password
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: git
+  namespace: git
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: git}
+  template:
+    metadata:
+      labels: {app: git}
+    spec:
+      securityContext: {runAsUser: 65532, runAsGroup: 65532, fsGroup: 65532}
+      containers:
+        - name: git
+          image: 10.96.200.200:5000/gitserver:e2e
+          args: [--root=/srv/git, --addr=:8080, --init=services,platform-chart]
+          envFrom: [{secretRef: {name: gitserver}}]
+          ports: [{containerPort: 8080}]
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8080}
+          volumeMounts: [{name: repos, mountPath: /srv/git}]
+      volumes:
+        - name: repos
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: git
+  namespace: git
+spec:
+  type: NodePort
+  selector: {app: git}
+  ports:
+    - {name: http, port: 80, targetPort: 8080, nodePort: 30080}

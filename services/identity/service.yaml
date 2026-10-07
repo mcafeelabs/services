@@ -1,0 +1,10 @@
+# Published by CI from github.com/mcafeelabs/identity. Do not edit here.
+apiVersion: platform/v1
+name: identity
+owner: team-identity
+chartProfile: http-api
+provides:
+  - name: api
+    kind: http-endpoint
+config:
+  schema: ./config-values.schema.yaml

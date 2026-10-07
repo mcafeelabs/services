@@ -1,0 +1,21 @@
+# What the central chart supports. Source of truth: platform-chart
+# chart/capabilities.yaml at the revision registry.yaml pins.
+apiVersion: platform/v1
+chartVersion: 0.1.0
+profiles:
+  - http-api
+  - worker
+kinds:
+  http-endpoint:
+    output: deterministic
+    value: "http://{{ .Service }}.{{ .Namespace }}.svc.cluster.local"
+  nats-subject:
+    output: deterministic
+    value: "{{ .Name }}"
+  sqs-queue:
+    output: deterministic
+    value: "{{ .Env }}-{{ .Service }}-{{ .Output }}"
+  postgres:
+    output: dynamic
+    defaultSandbox: isolate
+    keys: [host, port, database, username, password, uri]

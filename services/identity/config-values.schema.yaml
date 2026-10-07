@@ -1,0 +1,19 @@
+# Published by CI from github.com/mcafeelabs/identity. Do not edit here.
+$schema: https://json-schema.org/draft/2020-12/schema
+type: object
+required: [http, issuer, signingKey]
+properties:
+  log:
+    type: object
+    properties:
+      level: {enum: [debug, info, warn, error]}
+  http:
+    type: object
+    properties:
+      port: {type: integer}
+  nats:
+    type: object
+    properties:
+      url: {type: string}
+  issuer: {type: string, format: uri}
+  signingKey: {type: string, x-ref: [secret]}
