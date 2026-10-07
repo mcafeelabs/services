@@ -28,7 +28,7 @@ KARGO_VERSION=${KARGO_VERSION:-1.12.2}
 # The registry as the cluster sees it (fixed ClusterIP) and as the host pushes.
 REG=10.96.200.200:5000
 REG_PUSH=localhost:5001
-GIT_PUSH=http://e2e:e2e-password@localhost:8081
+GIT_PUSH=http://localhost:8081
 GIT_IN=http://git.git.svc.cluster.local
 SANDBOX=e2e
 SERVICES=(identity inventory payments orders)
@@ -59,6 +59,7 @@ diagnose() {
     [[ $s == Healthy/Synced ]] || {
       echo "## $a $s"
       kubectl -n argocd get "$a" -o jsonpath='{.status.conditions}{"\n"}{.status.operationState.message}{"\n"}' 2>/dev/null || true
+      kubectl -n argocd get "$a" -o json | jq -c '.status.resources[]? | select(.status != "Synced" or (.health.status // "Healthy") != "Healthy") | {kind, namespace, name, status, health: .health.status, msg: .health.message}' 2>/dev/null || true
     }
   done
   kubectl get externalsecrets,pushsecrets -A 2>/dev/null || true
@@ -206,8 +207,11 @@ phase_bootstrap() {
   # exist before the first promotion.
   kubectl create namespace services --dry-run=client -o yaml | kubectl apply -f -
   kubectl label namespace services kargo.akuity.io/project=true --overwrite
+  # (The e2e git server takes anonymous pushes; this shows where real
+  # credentials go.)
   kubectl -n services create secret generic services-git \
-    --from-literal=repoURL="$GIT_IN/services.git" --from-literal=username=e2e --from-literal=password=e2e-password \
+    --from-literal=repoURL='^http://git\.git\.svc\.cluster\.local/.*$' --from-literal=repoURLIsRegex=true \
+    --from-literal=username=e2e --from-literal=password=unused \
     --dry-run=client -o yaml | kubectl label --local -f - kargo.akuity.io/cred-type=git -o yaml | kubectl apply -f -
   sed "s|https://github.com/mcafeelabs/services|$GIT_IN/services.git|" "$REPO/bootstrap/registry.yaml" | kubectl apply -f -
 }

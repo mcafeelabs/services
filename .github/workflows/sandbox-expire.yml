@@ -9,6 +9,7 @@ permissions:
   contents: write
 env:
   PLATFORM_REF: main
+  GOPRIVATE: github.com/mcafeelabs/*
 jobs:
   expire:
     runs-on: ubuntu-latest

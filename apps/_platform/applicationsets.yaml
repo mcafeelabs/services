@@ -18,6 +18,8 @@ spec:
   - missingkey=error
   template:
     metadata:
+      annotations:
+        argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
       finalizers:
       - resources-finalizer.argocd.argoproj.io
       name: env-{{ .path.basename }}
@@ -61,6 +63,8 @@ spec:
   - missingkey=error
   template:
     metadata:
+      annotations:
+        argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
       finalizers:
       - resources-finalizer.argocd.argoproj.io
       name: sbx-{{ .path.basename }}-routing
@@ -104,6 +108,8 @@ spec:
   - missingkey=error
   template:
     metadata:
+      annotations:
+        argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
       finalizers:
       - resources-finalizer.argocd.argoproj.io
       labels:

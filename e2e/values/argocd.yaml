@@ -3,6 +3,8 @@ notifications: {enabled: false}
 configs:
   params:
     server.insecure: true
+    # Diff with a server-side dry run so API defaults are not drift.
+    controller.diff.server.side: "true"
   cm:
     timeout.reconciliation: 20s
     # Sync waves only wait on child Applications if Argo CD can judge their

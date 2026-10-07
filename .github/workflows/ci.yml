@@ -12,6 +12,8 @@ concurrency:
 env:
   # svcreg version (the platform repo's ref).
   PLATFORM_REF: main
+  # Resolve @main straight from GitHub; the module proxy caches branch queries.
+  GOPRIVATE: github.com/mcafeelabs/*
 jobs:
   validate:
     runs-on: ubuntu-latest
