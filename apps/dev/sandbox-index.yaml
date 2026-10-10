@@ -2,14 +2,7 @@
 apiVersion: v1
 data:
   sandboxes.json: |
-    {
-      "ryan-checkout-v2": {
-        "services": [
-          "orders",
-          "payments"
-        ]
-      }
-    }
+    {}
 kind: ConfigMap
 metadata:
   annotations:
